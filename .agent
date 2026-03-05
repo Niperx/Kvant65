@@ -334,3 +334,5 @@ WAGTAIL_REFERENCES_DISABLE_AUTO_INDEX = True
 WAGTAILSEARCH_BACKENDS = {"default": {"BACKEND": "wagtail.search.backends.database"}}
 ```
 Используется SQLite-поиск. При переходе на PostgreSQL менять на elasticsearch или db.
+
+aaaaa
