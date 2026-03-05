@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+
+<article class="bg-white dark:bg-slate-900 min-h-screen">
+
+    <!-- Hero image or gradient -->
+    {% if page.cover_image %}
+    <div class="h-72 sm:h-96 overflow-hidden relative">
+        {% image page.cover_image fill-1200x480 class="w-full h-full object-cover" %}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+    </div>
+    {% else %}
+    <div class="h-48 bg-gradient-to-br from-indigo-900 to-slate-900"></div>
+    {% endif %}
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm text-slate-400 mb-8">
+            <a href="/" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Главная</a>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <a href="/novosti/" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Новости</a>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="truncate max-w-48">{{ page.title }}</span>
+        </nav>
+
+        <!-- Meta -->
+        <div class="flex items-center gap-3 mb-6">
+            <span class="text-xs font-medium px-3 py-1 rounded-full
+                {% if page.category == 'achievement' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
+                {% elif page.category == 'event' %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                {% else %}bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400{% endif %}">
+                {{ page.get_category_display }}
+            </span>
+            <time class="text-sm text-slate-400" datetime="{{ page.date|date:'Y-m-d' }}">
+                {{ page.date|date:"d F Y" }}
+            </time>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 leading-tight">
+            {{ page.title }}
+        </h1>
+
+        <!-- Intro -->
+        <p class="text-lg text-slate-500 dark:text-slate-400 mb-8 leading-relaxed border-l-4 border-indigo-500 pl-4">
+            {{ page.intro }}
+        </p>
+
+        <!-- Body -->
+        <div class="rich-text text-slate-700 dark:text-slate-300 leading-relaxed text-[1.05rem]">
+            {{ page.body|richtext }}
+        </div>
+
+        <!-- Back link -->
+        <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <a href="/novosti/"
+               class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                </svg>
+                Все новости
+            </a>
+        </div>
+    </div>
+</article>
+
+{% endblock %}

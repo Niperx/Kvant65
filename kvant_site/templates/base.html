@@ -1,0 +1,206 @@
+{% load static wagtailcore_tags wagtailuserbar %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+        {% block title %}
+        {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
+        {% endblock %}
+        {% block title_suffix %}
+        {% wagtail_site as current_site %}
+        {% if current_site and current_site.site_name %} — {{ current_site.site_name }}{% endif %}
+        {% endblock %}
+    </title>
+    {% if page.search_description %}
+    <meta name="description" content="{{ page.search_description }}" />
+    {% endif %}
+    {% if request.in_preview_panel %}
+    <base target="_blank">
+    {% endif %}
+
+    <!-- Prefetch same-origin pages для ускорения переходов (eagerness: moderate = hover/pointer) -->
+    <script type="speculationrules">
+    {"prefetch": [{"where": {"href_matches": "/*"}, "eagerness": "moderate"}]}
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Основной акцент: спокойный голубой / cyan-blue
+                        brand: {
+                            50:  '#eff6ff',
+                            100: '#dbeafe',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        // Фоны: off-white
+                        surface: {
+                            DEFAULT: '#fafcff',
+                            alt: '#f8faff',
+                        }
+                    },
+                    letterSpacing: {
+                        'head': '0.02em',
+                        'head-wide': '0.06em',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'fade-in-down': 'fadeInDown 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(16px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeInDown: {
+                            '0%': { opacity: '0', transform: 'translateY(-12px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts: Inter (включая ExtraBold 800, Black 900) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Кастомные стили: анимации, rich-text, утилиты -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Мобильное меню: при навигации принудительно скрыто (HTMX + Alpine гонки) */
+        body.mobile-menu-closed #mobile-menu { display: none !important; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; font-size: 16px; }
+
+        /* Критично для HTMX: отступ под шапку и transition с первой отрисовки — иначе после Ctrl+F5
+           первая навигация не анимируется и позже появляется «лишний» padding сверху */
+        #main-content {
+            padding-top: 4rem;
+            transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        filter 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        /* Wagtail Rich Text — типографика и акценты */
+        .rich-text { line-height: 1.75; }
+        .rich-text h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.02em; margin: 1.5rem 0 0.75rem; color: #0f172a; }
+        .rich-text h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; margin: 1.25rem 0 0.5rem; color: #0f172a; }
+        .rich-text h4 { font-size: 1.125rem; font-weight: 600; margin: 1rem 0 0.5rem; color: #0f172a; }
+        .rich-text p  { margin-bottom: 1rem; color: #64748b; }
+        .rich-text ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .rich-text ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .rich-text li { margin-bottom: 0.25rem; color: #64748b; }
+        .rich-text a  { color: #2563eb; text-decoration: underline; transition: color 0.2s; }
+        .rich-text a:hover { color: #1e40af; }
+        .rich-text code { background: #eff6ff; color: #1e40af; padding: 0.2em 0.4em; border-radius: 0.25rem; font-size: 0.9em; }
+        .rich-text pre { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 0 0.5rem 0.5rem 0; overflow-x: auto; margin: 1rem 0; }
+        .rich-text pre code { background: none; padding: 0; color: #0f172a; }
+        .rich-text blockquote { border-left: 4px solid #3b82f6; padding-left: 1rem; margin: 1rem 0; color: #64748b; font-style: italic; }
+        .dark .rich-text h2, .dark .rich-text h3, .dark .rich-text h4 { color: #f1f5f9; }
+        .dark .rich-text p, .dark .rich-text li { color: #94a3b8; }
+        .dark .rich-text a { color: #60a5fa; }
+        .dark .rich-text a:hover { color: #93c5fd; }
+        .dark .rich-text code { background: #1e3a5f; color: #93c5fd; }
+        .dark .rich-text pre { background: #1e3a5f; border-left-color: #60a5fa; }
+        .dark .rich-text pre code { color: #e2e8f0; }
+        .dark .rich-text blockquote { border-left-color: #60a5fa; color: #94a3b8; }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<!-- HTMX BOOST: все внутренние ссылки — AJAX + pushState; подмена только #main-content, header не трогаем -->
+<body class="bg-[#fafcff] text-slate-900 min-h-screen flex flex-col" hx-boost="true" hx-target="#main-content" hx-swap="innerHTML swap:500ms">
+    {% wagtailuserbar %}
+
+    <!-- Fixed header: вне #main-content, не перерисовывается при HTMX-переходах -->
+    <div id="persistent-header" class="fixed top-0 left-0 right-0 w-full z-[9999] bg-white/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
+        {% include "includes/navbar.html" %}
+    </div>
+
+    <!-- Main content: отступ под фиксированный header — inline, чтобы был с первой отрисовки (до загрузки Tailwind) -->
+    <main class="flex-1 pt-16" id="main-content" role="main" style="padding-top: 4rem;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include "includes/footer.html" %}
+
+    <!-- HTMX BOOST: CDN, последняя 2.x -->
+    <script src="https://unpkg.com/htmx.org@2"></script>
+    <!-- HTMX BOOST: settleDelay чтобы settling не обрывал анимации; swap уже задержан через hx-swap="innerHTML swap:500ms" -->
+    <script>
+      htmx.config.settleDelay = 150;
+    </script>
+    <!-- HTMX BOOST: направление перехода, отложенный оверлей (без мерцания), title + Alpine -->
+    <script>
+      var htmxOverlayTimeout = null;
+      function closeMobileMenu() {
+        document.body.classList.add('mobile-menu-closed');
+        window.dispatchEvent(new CustomEvent('close-mobile-menu'));
+      }
+      document.body.classList.add('mobile-menu-closed');
+      document.body.addEventListener('htmx:beforeRequest', function(e) {
+        closeMobileMenu();
+        var nav = performance.getEntriesByType('navigation')[0];
+        var isBack = nav && nav.type === 'back_forward';
+        document.body.setAttribute('data-htmx-direction', isBack ? 'backwards' : 'forwards');
+        document.body.classList.remove('htmx-request-slow');
+        if (htmxOverlayTimeout) clearTimeout(htmxOverlayTimeout);
+        htmxOverlayTimeout = setTimeout(function() {
+          document.body.classList.add('htmx-request-slow');
+          htmxOverlayTimeout = null;
+        }, 180);
+      });
+      function htmxRequestDone() {
+        if (htmxOverlayTimeout) { clearTimeout(htmxOverlayTimeout); htmxOverlayTimeout = null; }
+        document.body.classList.remove('htmx-request-slow');
+        document.body.removeAttribute('data-htmx-direction');
+      }
+      document.body.addEventListener('htmx:afterSwap', function() {
+        htmxRequestDone();
+        closeMobileMenu();
+        var main = document.getElementById('main-content');
+        if (main && window.Alpine && typeof Alpine.initTree === 'function') Alpine.initTree(main);
+      });
+      document.body.addEventListener('htmx:afterSettle', function() {
+        requestAnimationFrame(function() { closeMobileMenu(); });
+      });
+      window.addEventListener('popstate', function() { closeMobileMenu(); });
+      window.addEventListener('pageshow', function(e) {
+        if (e.persisted) closeMobileMenu();
+      });
+      document.body.addEventListener('htmx:afterOnLoad', htmxRequestDone);
+      document.body.addEventListener('htmx:afterRequest', htmxRequestDone);
+      document.body.addEventListener('htmx:sendError', htmxRequestDone);
+      // HTMX BOOST: обновить document.title из ответа
+      document.body.addEventListener('htmx:afterOnLoad', function(e) {
+        if (e.detail && e.detail.xhr && e.detail.xhr.responseText) {
+          var match = e.detail.xhr.responseText.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+          if (match && match[1]) document.title = match[1].trim();
+        }
+      });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

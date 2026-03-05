@@ -1,0 +1,336 @@
+# Kvantorium Sakhalin — техническая справка для агента
+
+## Стек и версии
+- Python 3.12 (Windows)
+- Django 6.0.2
+- Wagtail 7.3
+- django-tasks 0.12.0 (с кастомным backend для совместимости с Py3.12)
+- modelsearch 1.1.1 (требуется wagtail.search)
+- Tailwind CSS CDN 3.x + Alpine.js CDN 3.x
+- HTMX 2.x (CDN unpkg) для boost-навигации и частичных подмен
+- SQLite (файл: `db.sqlite3` в корне проекта)
+
+---
+
+## Структура проекта
+
+```
+c:\Users\1\kvant\
+├── manage.py
+├── db.sqlite3                        # база данных
+├── .todo                             # что сделано / в планах
+├── .agent                            # этот файл — техническая справка
+├── kvant_site/                       # Django project package
+│   ├── settings/
+│   │   ├── base.py                   # основные настройки
+│   │   └── dev.py                    # dev-настройки (DEBUG=True, ALLOWED_HOSTS=*)
+│   ├── templates/
+│   │   ├── base.html                 # базовый HTML (Tailwind, Alpine.js, HTMX Boost, dark mode)
+│   │   └── includes/
+│   │       ├── navbar.html           # навигация с dropdown квантумов (в т.ч. МЕДИА) и мобильным меню
+│   │       └── footer.html           # подвал (#site-footer) с контактами и соцсетями
+│   ├── static/css/custom.css        # стили: rich-text, анимации, HTMX-переходы, #news-list-wrap, footer
+│   ├── urls.py                       # Wagtail + Django admin URL
+│   ├── compat_tasks_backend.py       # КРИТИЧНО: кастомный backend django-tasks
+│   └── wsgi.py
+├── home/                             # Главная страница
+│   ├── models.py → HomePage
+│   └── templates/home/home_page.html
+├── quantums/                         # Квантумы
+│   ├── models.py → QuantumIndexPage, QuantumPage, QuantumTeacher
+│   ├── management/commands/populate_quantums.py
+│   └── templates/quantums/
+│       ├── quantum_index_page.html
+│       └── quantum_page.html
+├── news/                             # Новости
+│   ├── models.py → NewsIndexPage (get_template для HX-Target=news-list-wrap), NewsPage
+│   └── templates/news/
+│       ├── news_index_page.html      # фильтр по категориям через HTMX (#news-list-wrap)
+│       ├── news_list_partial.html    # фрагмент только списка для HTMX-фильтра
+│       └── news_page.html
+├── about/                            # О нас
+│   ├── models.py → AboutPage, EmployeesPage, Employee (snippet)
+│   ├── migrations/0002_initial_employees.py  # 15 сотрудников
+│   └── templates/about/
+│       ├── about_page.html
+│       └── employees_page.html
+└── search/                           # Встроенный Wagtail поиск
+```
+
+---
+
+## Модели Wagtail (дерево страниц)
+
+### Дерево страниц в БД (текущее состояние)
+```
+Root (depth=1)
+└── Home (depth=2, slug=home) — HomePage
+    ├── kvantum (depth=3, slug=kvantum) — QuantumIndexPage
+    │   ├── aero   — QuantumPage
+    │   ├── it     — QuantumPage
+    │   ├── robo   — QuantumPage
+    │   ├── hitech — QuantumPage
+    │   ├── vrar   — QuantumPage
+    │   ├── energy — QuantumPage
+    │   └── design — QuantumPage
+    ├── novosti (depth=3, slug=novosti) — NewsIndexPage
+    ├── o-nas (depth=3, slug=o-nas) — AboutPage
+    │   └── sotrudniki (depth=4, slug=sotrudniki) — EmployeesPage
+    ...
+```
+Все основные разделы созданы через `python manage.py populate_site`.
+
+### home/models.py — HomePage
+```python
+class HomePage(Page):
+    search_auto_update = False  # отключает modelsearch сигнал
+    hero_title      = CharField(max_length=200)
+    hero_subtitle   = CharField(max_length=400)
+    intro_text      = RichTextField(blank=True)
+
+    def get_context(request):
+        context["quantums"]    = QuantumPage.objects.live().order_by("title")
+        context["latest_news"] = NewsPage.objects.live().order_by("-date")[:3]
+```
+
+### quantums/models.py
+
+**QuantumIndexPage** — контейнер для квантумов:
+- `intro` (RichTextField)
+- `get_context` передаёт `quantums` — live дочерние QuantumPage
+
+**QuantumTeacher** (Orderable, внешний ключ к QuantumPage):
+- `name` (CharField), `role` (CharField)
+
+**QuantumPage** — отдельный квантум:
+- `icon_emoji` (CharField, до 4 символов) — emoji для карточки
+- `short_description` (CharField, 300) — текст для карточки
+- `accent_color` (CharField choices) — hex цвет (#6366f1, #0ea5e9 и др.)
+- `age_range` (CharField) — "7–17 лет"
+- `max_students` (PositiveIntegerField) — 12
+- `body` (RichTextField) — полное описание программы
+- Связь с педагогами: `page.teachers.all()` → QuantumTeacher
+
+### news/models.py
+
+**NewsIndexPage** — лента:
+- Фильтрует по `?category=` (news/event/achievement)
+- `get_context` передаёт `news_list`, `current_category`
+
+**NewsPage**:
+- `date` (DateField)
+- `category` (choices: news/event/achievement)
+- `cover_image` (ForeignKey → wagtailimages.Image, null/blank)
+- `intro` (CharField, 500) — анонс
+- `body` (RichTextField) — полный текст
+- Метод: `get_category_display_name()` — читаемое название категории
+- `search_fields` — поиск по intro и body
+
+### about/models.py
+
+**Employee** (Snippet, не Page!):
+- `name`, `role`, `department` (choices), `photo`, `bio`, `sort_order`
+- Departments: management, aero, it, robo, hitech, vrar, energy, design, other
+- Редактируется в Wagtail Snippets, не через дерево страниц
+
+**EmployeesPage** (Page):
+- `get_context` передаёт:
+  - `management` — руководство
+  - `teachers_by_dept` — список [{key, label, employees}] по квантумам
+  - `other` — прочие сотрудники
+
+**AboutPage** (Page):
+- `body` (RichTextField)
+
+---
+
+## Важная проблема: django-tasks + Python 3.12
+
+**Симптом:** `TypeError: super(type, obj): obj must be an instance or subtype of type`
+при вызове `page.save()` или `add_child()`.
+
+**Причина:** `django-tasks 0.12.0` использует `TaskResult[T]` (frozen dataclass + generic),
+которое несовместимо с Python 3.12 из-за поведения `__setattr__` у frozen dataclasses.
+
+**Решение в проекте:**
+1. `kvant_site/compat_tasks_backend.py` — кастомный `Py312CompatBackend`
+   без `TaskResult[T]`, использует `TaskResult(...)` напрямую
+2. В `kvant_site/settings/base.py`:
+   ```python
+   TASKS = {"default": {"BACKEND": "kvant_site.compat_tasks_backend.Py312CompatBackend"}}
+   WAGTAIL_REFERENCES_DISABLE_AUTO_INDEX = True
+   ```
+3. Во всех Page-моделях: `search_auto_update = False`
+
+**Если проблема вернётся:** убедиться что все три меры на месте.
+
+---
+
+## HTMX Boost и анимации переходов
+
+### Общая схема
+- **View Transitions API** в проекте не используется (убрана реализация на fetch + startViewTransition).
+- Навигация между страницами: **HTMX 2.x** (CDN `htmx.org@2`) с **hx-boost="true"** на `<body>`.
+- Подмена только контента: `hx-target="#main-content"`, `hx-swap="innerHTML swap:500ms"` — header и footer не перерисовываются.
+- Фиксированный отступ под шапку: у `<main id="main-content">` задан **inline** `style="padding-top: 4rem;"` и критический CSS в `<head>`, чтобы отступ и transition были с первой отрисовки (нет мерцания и «появления» отступа после первой навигации).
+
+### base.html — что добавлено
+- В `<head>` в `<style>`: для `#main-content` — `padding-top: 4rem` и `transition` (opacity, transform, filter) для первой отрисовки.
+- `<body>`: атрибуты `hx-boost="true"` `hx-target="#main-content"` `hx-swap="innerHTML swap:500ms"`.
+- После `</main>` один раз подключается footer: `{% include "includes/footer.html" %}`.
+- Перед `</body>`: скрипт HTMX CDN; `htmx.config.settleDelay = 150`; скрипт с обработчиками:
+  - **htmx:beforeRequest** — выставляется `data-htmx-direction` (forwards/backwards) по типу навигации; запускается таймер 180 ms для класса `htmx-request-slow`.
+  - **htmx:afterSwap** / **afterOnLoad** / **afterRequest** / **sendError** — сброс таймера, снятие `htmx-request-slow` и `data-htmx-direction`, вызов `Alpine.initTree(main)` для нового контента.
+  - **htmx:afterOnLoad** — из ответа вытаскивается `<title>` и выставляется `document.title`.
+- Оверлей и спиннер загрузки показываются **только при долгом запросе** (класс `htmx-request-slow` на body через ~180 ms), чтобы не было мерцания при быстрых переходах.
+
+### custom.css — блок «HTMX BOOST»
+- `#main-content`: `box-sizing`, `backface-visibility: hidden`, transition по opacity/transform/filter (0.5s).
+- **.htmx-swapping** — уход: opacity 0, translateX(-20%) или +20% по направлению, blur(2px), pointer-events: none.
+- **.htmx-settling** — появление: keyframe-анимации `htmx-slide-in-from-right` / `htmx-slide-in-from-left` в зависимости от `[data-htmx-direction]`.
+- Оверлей и спиннер: селекторы `body.htmx-request.htmx-request-slow` (::before на #main-content, ::after на body).
+- На время перехода: `#main-content.htmx-swapping` и `#main-content.htmx-settling` — `min-height: 60vh`, чтобы footer не прыгал.
+- Устранение дубликата футера: `#main-content footer { display: none !important; }` — футер из подменённого контента скрыт; единственный видимый — `#site-footer` (в `includes/footer.html` у тега `<footer>` задан `id="site-footer"`).
+
+### Страница «Новости» — фильтр по категориям
+- Ссылки фильтра (Все / Новости / Мероприятия / Достижения): **hx-boost="false"**, `hx-get`, `hx-target="#news-list-wrap"`, `hx-swap="innerHTML swap:300ms"`, `hx-push-url="true"`.
+- В **news/models.py** у `NewsIndexPage`: `get_template(request)` при заголовке **HX-Request** и **HX-Target == "news-list-wrap"** возвращает `news/news_list_partial.html`, иначе — обычный шаблон (при переходе по ссылке «Новости» в меню отдаётся полная страница с шапкой и фильтром).
+- Шаблон **news_list_partial.html** — только фрагмент списка (сетка карточек или блок «Новостей пока нет»), без header и табов.
+- В **news_index_page.html**: блок контента обёрнут в `<div id="news-list-wrap">`; описание — `{{ page.intro|richtext }}` при наличии; табы с `data-category`, `data-active-class`, `data-inactive-class` и `id="news-filter-tabs"`; в `{% block extra_js %}` скрипт обновления активного таба по URL после `htmx:afterSwap`.
+- В **custom.css** для `#news-list-wrap`: transition, `.htmx-swapping` (opacity 0, translateY(8px)), `.htmx-settling` (opacity 1, translateY(0)).
+
+### Navbar — квантумы
+- В выпадающем меню «Квантумы» и в мобильном меню добавлен пункт **МЕДИА** (`/kvantum/media/`, иконка 🎥). Остальные квантумы по-прежнему захардкожены; при добавлении нового квантума в CMS пункт нужно добавить вручную в `kvant_site/templates/includes/navbar.html`.
+
+---
+
+## Шаблоны — ключевые особенности
+
+### base.html (`kvant_site/templates/base.html`)
+- `<html x-data="themeApp()" :class="{ 'dark': dark }">` — Alpine.js управляет темой
+- Tailwind `darkMode: 'class'` — переключается через CSS класс на `<html>`
+- `themeApp()` — JS функция в конце base.html, читает/пишет `localStorage['theme']`
+- По умолчанию тёмная тема (`dark: localStorage.getItem('theme') !== 'light'`)
+- **Fixed header**: `#persistent-header` (fixed, z-index 9999), вне `#main-content` — не подменяется при HTMX.
+- **Main**: `<main id="main-content" ... style="padding-top: 4rem;">` — единственный блок, чей innerHTML подменяется при boost-переходах.
+- **Footer**: один раз `{% include "includes/footer.html" %}` (футер с `id="site-footer"`).
+- Блоки: `{% block content %}`, `{% block extra_css %}`, `{% block extra_js %}`
+
+### Tailwind конфигурация (внутри base.html `<script>`)
+```javascript
+tailwind.config = {
+    darkMode: 'class',
+    theme: { extend: { colors: { brand: { 500: '#6366f1', ... } } } }
+}
+```
+
+### navbar.html — важное
+- `x-data="{ mobileOpen: false }"` — мобильное меню
+- Dropdown квантумов: `@mouseenter="open=true" @mouseleave="open=false"`
+- Кнопка темы: `@click="toggle()"` — вызывает themeApp().toggle()
+- URL-пути захардкожены (не через Wagtail `{% pageurl %}`)
+
+### Отображение richtext в шаблонах
+```django
+{{ page.body|richtext }}  {# нужен тег richtext из wagtailcore_tags #}
+```
+CSS класс `.rich-text` определён в `<style>` в base.html.
+
+---
+
+## CMS — Wagtail Admin
+
+- URL: `http://localhost:8000/admin/`
+- Логин: `admin` / `admin123` (создан через `createsuperuser`)
+- Wagtail URL: `/admin/` (настроен в `kvant_site/urls.py`)
+- Django admin: `/django-admin/`
+
+### Как добавить новость через CMS
+1. Войти в `/admin/`
+2. Pages → Home → (найти раздел новостей или создать NewsIndexPage)
+3. Внутри NewsIndexPage → Add child page → News Page
+4. Заполнить: заголовок, дату, категорию, анонс, текст, опционально обложку
+
+### Как добавить сотрудника
+1. Snippets → Сотрудники → Add (модель Employee устарела)
+2. Страницы сотрудников (EmployeePage): Pages → О нас → Сотрудники → Add child page
+3. ФИО (title), slug, должность, отдел, фото, биография
+
+### Подробные биографии с оригинального сайта
+- **Парсинг:** `python manage.py scrape_employee_bios` — скачивает с https://kvantorium.sakhalin.gov.ru/about-2/employees полный контент страниц сотрудников и сохраняет в `about/data/scraped_bios.json`.
+- **Применение к БД:** `python manage.py update_employee_bios --from-scraped` — заполняет EmployeePage.bio из scraped_bios.json (каждый курс, достижения с местами/годами, проекты по именам — как на оригинальном сайте).
+- Без `--from-scraped` биографии берутся из встроенного словаря BIOS в той же команде (краткие формулировки).
+
+---
+
+## Management Commands
+
+### populate_quantums  (`quantums/management/commands/populate_quantums.py`)
+```bash
+python manage.py populate_quantums
+```
+Создаёт QuantumIndexPage (slug=kvantum) как дочернюю к Home + 7 QuantumPage с педагогами.
+**Безопасно при повторном запуске** — пропускает если kvantum уже есть.
+
+**Важно:** Требует что Home page имеет корректный numchild.
+Если после неудачного запуска numchild некорректен:
+```python
+from wagtail.models import Page
+Page.objects.filter(slug='home').update(numchild=<актуальное число дочерних>)
+```
+
+### populate_site  (`home/management/commands/populate_site.py`)
+```bash
+python manage.py populate_site
+```
+Создаёт основные разделы сайта в дереве Wagtail:
+- `/novosti/` — NewsIndexPage (slug=novosti, дочерняя к Home)
+- `/o-nas/` — AboutPage (slug=o-nas, дочерняя к Home)
+- `/o-nas/sotrudniki/` — EmployeesPage (slug=sotrudniki, дочерняя к AboutPage)
+
+**Безопасно при повторном запуске** — пропускает существующие страницы по slug.
+
+---
+
+## Начальные данные (data migrations)
+
+- `about/migrations/0002_initial_employees.py` — 15 сотрудников
+  - 3 руководителя (department=management)
+  - Педагоги по квантумам: aero(2), it(2), robo(3), hitech(1), vrar(1), energy(1), design(2)
+- Квантумы создаются через management command, не migration (из-за ограничений Wagtail treebeard)
+
+---
+
+## URL-маршрутизация
+
+Wagtail сам обрабатывает URL на основе slug страниц в БД.
+Ключевые URL (зависят от slug в БД):
+- `/` — HomePage
+- `/kvantum/` — QuantumIndexPage
+- `/kvantum/aero/` — QuantumPage (slug=aero)
+- `/novosti/` — NewsIndexPage (slug=novosti, создана через populate_site)
+- `/o-nas/` — AboutPage (slug=o-nas, создана через populate_site)
+- `/o-nas/sotrudniki/` — EmployeesPage (slug=sotrudniki, создана через populate_site)
+- `/admin/` — Wagtail admin
+- `/django-admin/` — Django admin
+- `/documents/` — Wagtail documents
+- `/search/` — поиск
+
+---
+
+## Настройки
+
+### base.py — ключевые нестандартные
+```python
+LANGUAGE_CODE = "ru-ru"
+TIME_ZONE = "Asia/Sakhalin"
+WAGTAIL_SITE_NAME = "РРЦ «Кванториум» Сахалин"
+TASKS = {"default": {"BACKEND": "kvant_site.compat_tasks_backend.Py312CompatBackend"}}
+WAGTAIL_REFERENCES_DISABLE_AUTO_INDEX = True
+```
+
+### Поиск
+```python
+WAGTAILSEARCH_BACKENDS = {"default": {"BACKEND": "wagtail.search.backends.database"}}
+```
+Используется SQLite-поиск. При переходе на PostgreSQL менять на elasticsearch или db.

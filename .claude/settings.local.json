@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:kvantorium.sakhalin.gov.ru)",
+      "Bash(pip install wagtail django-environ pillow)",
+      "Bash(wagtail start kvant_site .)",
+      "Bash(python manage.py startapp quantums)",
+      "Bash(python manage.py startapp news)",
+      "Bash(python manage.py startapp about)",
+      "Bash(python manage.py makemigrations)",
+      "Bash(python manage.py migrate)",
+      "Bash(python manage.py migrate quantums 0001 --fake)",
+      "Bash(python manage.py populate_quantums)",
+      "Bash(pip show modelsearch django-tasks)",
+      "Bash(pip uninstall modelsearch -y)",
+      "Bash(pip install modelsearch)",
+      "Bash(pip install \"django-tasks>=1.0\")",
+      "Bash(pip install \"django-tasks==0.12.0\")",
+      "Bash(pip install \"modelsearch==1.1.1\")",
+      "Bash(python -c \":*)",
+      "Bash(python -c \"import django_tasks.backends; import os; print\\(os.listdir\\(os.path.dirname\\(django_tasks.backends.__file__\\)\\)\\)\")",
+      "Bash(python manage.py createsuperuser --username admin --email admin@kvant.ru --noinput)",
+      "Bash(python manage.py shell -c \"from django.contrib.auth.models import User; u=User.objects.get\\(username=''admin''\\); u.set_password\\(''admin123''\\); u.save\\(\\); print\\(''Password set''\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/kvantum/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/kvantum/aero/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/admin/)",
+      "Bash(python manage.py populate_site)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/o-nas/sotrudniki/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/novosti/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/o-nas/)",
+      "Bash(python manage.py makemigrations quantums --settings=kvant_site.settings.dev)",
+      "Bash(python manage.py migrate --settings=kvant_site.settings.dev)",
+      "Bash(ls \"c:\\\\Users\\\\1\\\\kvant\\\\media\\\\original_images\"\" 2>/dev/null; ls \"c:Users1kvantmedia\"\")",
+      "Bash(python manage.py makemigrations about --settings=kvant_site.settings.dev)",
+      "Bash(python manage.py populate_employee_pages --settings=kvant_site.settings.dev)",
+      "Bash(python manage.py shell --settings=kvant_site.settings.dev -c \":*)",
+      "Bash(python manage.py update_employee_bios --settings=kvant_site.settings.dev)"
+    ]
+  }
+}

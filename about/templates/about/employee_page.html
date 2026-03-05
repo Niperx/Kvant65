@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-14">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Breadcrumb -->
+        <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-400 mb-10">
+            <a href="/" class="hover:text-white transition-colors">Главная</a>
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <a href="/o-nas/" class="hover:text-white transition-colors">О нас</a>
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <a href="/o-nas/sotrudniki/" class="hover:text-white transition-colors">Сотрудники</a>
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="text-white">{{ page.title }}</span>
+        </nav>
+
+        <div class="flex flex-col sm:flex-row items-start gap-10">
+
+            <!-- Photo — full portrait, no forced crop -->
+            {% if page.photo %}
+            {% image page.photo width-320 as img %}
+            <div class="shrink-0 w-44 sm:w-52 lg:w-60">
+                <img src="{{ img.url }}"
+                     alt="{{ page.title }}"
+                     class="w-full rounded-2xl ring-4 ring-white/20 object-cover"
+                     style="max-height: 360px;">
+            </div>
+            {% else %}
+            <div class="shrink-0 w-44 sm:w-52 lg:w-60 rounded-2xl bg-indigo-800/50 ring-4 ring-white/20 flex items-center justify-center"
+                 style="height: 280px;">
+                <span class="text-6xl font-bold text-indigo-300">{{ page.title|first }}</span>
+            </div>
+            {% endif %}
+
+            <!-- Info -->
+            <div class="flex-1 pt-2">
+                <div class="inline-block bg-white/10 border border-white/20 rounded-full px-3 py-1 text-xs text-slate-300 mb-4">
+                    {{ page.get_department_label }}
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold leading-tight mb-3">{{ page.title }}</h1>
+                <p class="text-indigo-300 text-lg font-medium">{{ page.role }}{% if page.direction %} · {{ page.direction }}{% endif %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bio -->
+<section class="py-14 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl">
+            {% if page.bio %}
+            <div class="rich-text text-slate-600 dark:text-slate-300 leading-relaxed">
+                {{ page.bio|richtext }}
+            </div>
+            {% else %}
+            <p class="text-slate-400 italic">Биография будет добавлена в ближайшее время.</p>
+            {% endif %}
+
+            <div class="mt-10 pt-8 border-t border-slate-200 dark:border-slate-700">
+                <a href="/o-nas/sotrudniki/"
+                   class="inline-flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                    </svg>
+                    Все сотрудники
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

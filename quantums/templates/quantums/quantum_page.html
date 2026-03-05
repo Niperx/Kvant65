@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+
+<!-- Hero Banner -->
+<div class="relative overflow-hidden text-white py-24"
+     style="background: linear-gradient(135deg, {{ page.accent_color }}22 0%, {{ page.accent_color }}44 100%), linear-gradient(to bottom right, #0f172a, #1e293b);">
+    <div class="absolute inset-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-30"
+         style="background-color: {{ page.accent_color }};"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm text-slate-400 mb-8">
+            <a href="/" class="hover:text-white transition-colors">Главная</a>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <a href="/kvantum/" class="hover:text-white transition-colors">Квантумы</a>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="text-white">{{ page.title }}</span>
+        </nav>
+
+        <div class="flex items-center gap-6">
+            <div class="text-7xl">{{ page.icon_emoji }}</div>
+            <div>
+                <h1 class="text-4xl sm:text-5xl font-extrabold mb-3" style="color: {{ page.accent_color }}">
+                    {{ page.title }}
+                </h1>
+                <p class="text-slate-300 text-lg max-w-xl">{{ page.short_description }}</p>
+            </div>
+        </div>
+
+        <!-- Key info chips -->
+        <div class="flex flex-wrap gap-3 mt-8">
+            <span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">
+                🎂 {{ page.age_range }}
+            </span>
+            <span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">
+                👥 До {{ page.max_students }} учеников
+            </span>
+            <span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">
+                💳 Бесплатно по сертификату
+            </span>
+            <span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">
+                📍 Пн–Сб, 9:00–19:20
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Content -->
+<section class="py-16 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-3 gap-12">
+
+            <!-- Main body -->
+            <div class="lg:col-span-2">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">О программе</h2>
+                {% if page.body %}
+                <div class="rich-text text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {{ page.body|richtext }}
+                </div>
+                {% else %}
+                <p class="text-slate-400 italic">Описание программы будет добавлено в ближайшее время.</p>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+
+                <!-- Teachers -->
+                {% if page.teachers.all %}
+                <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="text-xl">👨‍🏫</span> Педагоги
+                    </h3>
+                    <ul class="space-y-3">
+                        {% for teacher in page.teachers.all %}
+                        <li class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5"
+                                 style="background-color: {{ page.accent_color }}">
+                                {{ teacher.name|first }}
+                            </div>
+                            <div>
+                                <div class="font-medium text-sm text-slate-900 dark:text-white">{{ teacher.name }}</div>
+                                <div class="text-xs text-slate-400">{{ teacher.role }}</div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Contact CTA -->
+                <div class="rounded-2xl p-6 text-white" style="background: linear-gradient(135deg, {{ page.accent_color }}, {{ page.accent_color }}99);">
+                    <h3 class="font-bold mb-2">Хотите записаться?</h3>
+                    <p class="text-sm opacity-90 mb-4">Позвоните нам или напишите на email — ответим на все вопросы.</p>
+                    <a href="tel:+74242300277"
+                       class="block text-center bg-white/20 hover:bg-white/30 border border-white/30 font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors mb-2">
+                        +7 4242 300-277
+                    </a>
+                    <a href="/raspisanie/"
+                       class="block text-center bg-white/10 hover:bg-white/20 border border-white/20 font-medium py-2.5 px-4 rounded-xl text-sm transition-colors">
+                        Расписание занятий
+                    </a>
+                </div>
+
+                <!-- Back link -->
+                <a href="/kvantum/"
+                   class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                    </svg>
+                    Все квантумы
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery -->
+{% with gallery=page.gallery_images.all %}
+{% if gallery %}
+<section class="py-14 bg-slate-50 dark:bg-slate-800/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Фотогалерея</h2>
+
+        <div
+            x-data="{
+                current: 0,
+                total: {{ gallery|length }},
+                perPage: window.innerWidth >= 1024 ? 3 : (window.innerWidth >= 640 ? 2 : 1),
+                get maxSlide() { return Math.max(0, this.total - this.perPage) },
+                prev() { this.current = Math.max(0, this.current - 1) },
+                next() { this.current = Math.min(this.maxSlide, this.current + 1) }
+            }"
+            class="relative"
+        >
+            <!-- Slide strip -->
+            <div class="overflow-hidden rounded-2xl">
+                <div
+                    class="flex transition-transform duration-400 ease-in-out"
+                    :style="`transform: translateX(calc(-${current * (100 / perPage)}%))`"
+                >
+                    {% for item in gallery %}
+                    {% image item.image fill-800x530 as img %}
+                    <div class="shrink-0 px-2" :style="`width: ${100 / perPage}%`">
+                        <div class="group relative overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-700 aspect-video cursor-pointer"
+                             @click="$dispatch('open-lightbox', { src: '{{ img.url }}', caption: '{{ item.caption|escapejs }}' })">
+                            <img src="{{ img.url }}"
+                                 alt="{{ item.caption|default:page.title }}"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            {% if item.caption %}
+                            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <p class="text-white text-sm">{{ item.caption }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Prev button -->
+            <button
+                @click="prev()"
+                :disabled="current === 0"
+                :class="current === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-slate-700 hover:shadow-lg'"
+                class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 transition-all shadow"
+                aria-label="Назад"
+            >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            <!-- Next button -->
+            <button
+                @click="next()"
+                :disabled="current >= maxSlide"
+                :class="current >= maxSlide ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-slate-700 hover:shadow-lg'"
+                class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 transition-all shadow"
+                aria-label="Вперёд"
+            >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+
+            <!-- Counter -->
+            <div class="flex justify-center mt-6 items-center gap-3">
+                <!-- Dots (если мало фото) -->
+                <template x-if="total <= 9">
+                    <div class="flex gap-2">
+                        <template x-for="i in (maxSlide + 1)" :key="i">
+                            <button
+                                @click="current = i - 1"
+                                :class="current === i - 1
+                                    ? 'w-6 rounded-full'
+                                    : 'w-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400'"
+                                class="h-2 rounded-full transition-all duration-300"
+                                :style="current === i - 1 ? `background-color: {{ page.accent_color }}` : ''"
+                            ></button>
+                        </template>
+                    </div>
+                </template>
+                <!-- Числовой счётчик (если много фото) -->
+                <template x-if="total > 9">
+                    <span class="text-sm text-slate-400" x-text="`${current + 1} / ${maxSlide + 1}`"></span>
+                </template>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Lightbox -->
+<div
+    x-data="{ open: false, src: '', caption: '' }"
+    @open-lightbox.window="open = true; src = $event.detail.src; caption = $event.detail.caption"
+    @keydown.escape.window="open = false"
+    x-show="open"
+    x-transition:enter="transition duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:leave="transition duration-150"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+    @click.self="open = false"
+>
+    <div class="relative max-w-4xl w-full">
+        <img :src="src" :alt="caption" class="w-full max-h-[80vh] object-contain rounded-xl">
+        <p x-show="caption" x-text="caption" class="text-white text-center mt-3 text-sm opacity-80"></p>
+        <button
+            @click="open = false"
+            class="absolute -top-4 -right-4 w-9 h-9 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+            aria-label="Закрыть"
+        >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+
+{% endblock %}

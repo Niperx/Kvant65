@@ -1,0 +1,4 @@
+Django>=6,<6.1
+wagtail==7.3rc1
+requests>=2.28
+beautifulsoup4>=4.12

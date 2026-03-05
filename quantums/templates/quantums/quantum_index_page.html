@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">Квантумы</h1>
+        <p class="text-slate-300 text-lg max-w-2xl">
+            Выберите направление — все программы бесплатны по сертификату дополнительного образования для детей 7–17 лет
+        </p>
+    </div>
+</div>
+
+<!-- Cards Grid -->
+<section class="py-16 bg-slate-50 dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for quantum in quantums %}
+            <a href="{{ quantum.url }}"
+               class="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col">
+                <!-- Color bar -->
+                <div class="h-2" style="background-color: {{ quantum.specific.accent_color }}"></div>
+                <div class="p-6 flex flex-col flex-1">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="text-5xl">{{ quantum.specific.icon_emoji }}</div>
+                        <div>
+                            <h2 class="font-bold text-xl" style="color: {{ quantum.specific.accent_color }}">
+                                {{ quantum.title }}
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">{{ quantum.specific.age_range }} · до {{ quantum.specific.max_students }} чел.</p>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-slate-600 dark:text-slate-300 flex-1 leading-relaxed mb-5">
+                        {{ quantum.specific.short_description }}
+                    </p>
+
+                    <!-- Teachers -->
+                    {% if quantum.specific.teachers.all %}
+                    <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+                        <p class="text-xs font-medium text-slate-400 mb-2">Педагоги:</p>
+                        <ul class="space-y-1">
+                            {% for teacher in quantum.specific.teachers.all %}
+                            <li class="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: {{ quantum.specific.accent_color }}"></span>
+                                {{ teacher.name }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4 flex items-center gap-1 text-sm font-medium group-hover:gap-2 transition-all" style="color: {{ quantum.specific.accent_color }}">
+                        Подробнее
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Info Banner -->
+<section class="py-12 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+            <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">Бесплатно</div>
+                <div class="text-sm text-slate-500">по сертификату доп. образования</div>
+            </div>
+            <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">7–17 лет</div>
+                <div class="text-sm text-slate-500">возраст участников</div>
+            </div>
+            <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">до 12 чел.</div>
+                <div class="text-sm text-slate-500">в каждой группе</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

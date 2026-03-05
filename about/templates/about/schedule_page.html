@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block extra_css %}
+<style>
+  .schedule-table table { width: 100%; border-collapse: collapse; }
+  .schedule-table th, .schedule-table td { border: 1px solid rgb(226 232 240); padding: 0.5rem 0.75rem; text-align: left; }
+  .dark .schedule-table th, .dark .schedule-table td { border-color: rgb(51 65 85); }
+  .schedule-table h3 { margin: 0.75rem 0 0.5rem; font-size: 1.1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">{{ page.title }}</h1>
+    </div>
+</div>
+
+<section class="py-16 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% if page.intro %}
+        <div class="rich-text text-slate-700 dark:text-slate-300 leading-relaxed mb-8">
+            {{ page.intro|richtext }}
+        </div>
+        {% endif %}
+
+        {% if page.schedule_table_html %}
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="schedule-table text-slate-700 dark:text-slate-300">
+                {{ page.schedule_table_html|safe }}
+            </div>
+        </div>
+        {% elif page.body %}
+        <div class="rich-text text-slate-700 dark:text-slate-300 leading-relaxed">
+            {{ page.body|richtext }}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

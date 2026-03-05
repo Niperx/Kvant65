@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+
+<!-- Header: заголовок и описание (intro из CMS) -->
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">Новости</h1>
+        {% if page.intro %}
+        <div class="text-slate-300 text-lg prose prose-invert max-w-none">{{ page.intro|richtext }}</div>
+        {% else %}
+        <p class="text-slate-300 text-lg">События, достижения и мероприятия Кванториума</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Фильтр по категориям (теги): HTMX подмена только списка; активный таб обновляется по URL в JS -->
+<div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-16 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div id="news-filter-tabs" class="flex gap-1 py-3 overflow-x-auto">
+            <a href="{{ page.url }}"
+               data-category=""
+               data-class-base="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+               data-active-class="bg-indigo-600 text-white"
+               data-inactive-class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+               hx-get="{{ page.url }}"
+               hx-target="#news-list-wrap"
+               hx-swap="innerHTML swap:300ms"
+               hx-push-url="true"
+               hx-boost="false"
+               class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors {% if not current_category %}bg-indigo-600 text-white{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                Все
+            </a>
+            <a href="{{ page.url }}?category=news"
+               data-category="news"
+               data-class-base="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+               data-active-class="bg-indigo-600 text-white"
+               data-inactive-class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+               hx-get="{{ page.url }}?category=news"
+               hx-target="#news-list-wrap"
+               hx-swap="innerHTML swap:300ms"
+               hx-push-url="true"
+               hx-boost="false"
+               class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors {% if current_category == 'news' %}bg-indigo-600 text-white{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                Новости
+            </a>
+            <a href="{{ page.url }}?category=event"
+               data-category="event"
+               data-class-base="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+               data-active-class="bg-blue-600 text-white"
+               data-inactive-class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+               hx-get="{{ page.url }}?category=event"
+               hx-target="#news-list-wrap"
+               hx-swap="innerHTML swap:300ms"
+               hx-push-url="true"
+               hx-boost="false"
+               class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors {% if current_category == 'event' %}bg-blue-600 text-white{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                Мероприятия
+            </a>
+            <a href="{{ page.url }}?category=achievement"
+               data-category="achievement"
+               data-class-base="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+               data-active-class="bg-green-600 text-white"
+               data-inactive-class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+               hx-get="{{ page.url }}?category=achievement"
+               hx-target="#news-list-wrap"
+               hx-swap="innerHTML swap:300ms"
+               hx-push-url="true"
+               hx-boost="false"
+               class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors {% if current_category == 'achievement' %}bg-green-600 text-white{% else %}text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                Достижения
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- News grid: только эта часть подменяется при смене фильтра (анимация списка в custom.css) -->
+<section class="py-12 bg-slate-50 dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div id="news-list-wrap">
+            {% if news_list %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for article in news_list %}
+                <a href="{{ article.url }}"
+                   class="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col">
+                    {% if article.specific.cover_image %}
+                    <div class="h-48 overflow-hidden">
+                        {% image article.specific.cover_image fill-600x300 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" %}
+                    </div>
+                    {% else %}
+                    <div class="h-48 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+                        <span class="text-5xl opacity-30">
+                            {% if article.specific.category == 'achievement' %}🏆
+                            {% elif article.specific.category == 'event' %}🎉
+                            {% else %}📰{% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                    <div class="p-5 flex flex-col flex-1">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-xs font-medium px-2 py-0.5 rounded-full
+                                {% if article.specific.category == 'achievement' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
+                                {% elif article.specific.category == 'event' %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                                {% else %}bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400{% endif %}">
+                                {{ article.specific.get_category_display }}
+                            </span>
+                            <span class="text-xs text-slate-400">{{ article.specific.date|date:"d M Y" }}</span>
+                        </div>
+                        <h2 class="font-bold text-slate-900 dark:text-white mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex-1">
+                            {{ article.title }}
+                        </h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">{{ article.specific.intro }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-24">
+                <span class="text-6xl block mb-4">📋</span>
+                <h2 class="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">Новостей пока нет</h2>
+                <p class="text-slate-400">Они появятся здесь после добавления через CMS</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  function setActiveNewsTab() {
+    var wrap = document.getElementById('news-list-wrap');
+    if (!wrap) return;
+    var params = new URLSearchParams(window.location.search);
+    var category = params.get('category') || '';
+    var tabs = document.querySelectorAll('#news-filter-tabs a[data-category]');
+    tabs.forEach(function(tab) {
+      var tabCategory = tab.getAttribute('data-category') || '';
+      var base = tab.getAttribute('data-class-base') || '';
+      var activeClass = tab.getAttribute('data-active-class') || '';
+      var inactiveClass = tab.getAttribute('data-inactive-class') || '';
+      tab.className = base + ' ' + (tabCategory === category ? activeClass : inactiveClass);
+    });
+  }
+  document.body.addEventListener('htmx:afterSwap', function(e) {
+    if (e.detail && e.detail.target && e.detail.target.id === 'news-list-wrap')
+      setActiveNewsTab();
+  });
+  setActiveNewsTab();
+})();
+</script>
+{% endblock %}
