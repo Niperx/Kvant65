@@ -354,7 +354,6 @@ WAGTAILSEARCH_BACKENDS = {"default": {"BACKEND": "wagtail.search.backends.databa
 
 ## Деплой на Render
 
-- **render.yaml** — Blueprint: Web Service (Python) + PostgreSQL (free). Build: `./build.sh` (pip, collectstatic, migrate). Start: gunicorn.
-- **kvant_site/settings/production.py** — DEBUG=False, DATABASE_URL (dj-database-url), WhiteNoise, ALLOWED_HOSTS (.onrender.com, RENDER_EXTERNAL_HOSTNAME).
-- После первого деплоя в Render Shell: `createsuperuser`, `populate_site`, `populate_quantums`; в Wagtail Sites задать hostname = хост Render.
-- **RENDER.md** — пошаговая инструкция по деплою и пост-настройке.
+- **Демо (по умолчанию):** **render.yaml** без PostgreSQL — один Web Service. В репо кладут **db.sqlite3** и **media/**; при деплое Render подхватывает их из репо. **production.py** при отсутствии DATABASE_URL использует SQLite и выставляет SERVE_MEDIA=True (медиа раздаёт Django). Для «только показать» этого достаточно; изменения в админке на Render при редеплое сбрасываются.
+- **production.py** — при заданном **DATABASE_URL** используется PostgreSQL; иначе SQLite (BASE_DIR/db.sqlite3). Опционально S3 для медиа (AWS_STORAGE_BUCKET_NAME и др.).
+- **RENDER.md** — инструкция: демо на SQLite из репо, при необходимости — вариант с PostgreSQL и S3.

@@ -1,52 +1,51 @@
 # Деплой на Render
 
-Проект настроен для развёртывания на [Render](https://render.com) с PostgreSQL.
+## Вариант «демо»: SQLite и медиа из репозитория (проще всего)
 
-## Что уже сделано
+Если сайт нужен **только чтобы показать** (без постоянного хранения данных между деплоями), можно не поднимать PostgreSQL и не настраивать S3. Render при каждом деплое возьмёт из репо **db.sqlite3** и папку **media/** — всё уже будет на месте.
 
-- **render.yaml** — описание сервиса (web + БД). Подключите репозиторий к Render через Blueprint.
-- **kvant_site/settings/production.py** — продакшен-настройки (PostgreSQL, WhiteNoise, ALLOWED_HOSTS).
-- **build.sh** — сборка: `pip install`, `collectstatic`, `migrate`.
-- **requirements.txt** — добавлены gunicorn, whitenoise, dj-database-url, psycopg2-binary.
+### Что сделать
 
-## Как задеплоить
+1. **Добавьте в репозиторий** (если ещё не добавлены):
+   - **db.sqlite3** — ваша текущая БД с страницами, сотрудниками, новостями;
+   - папку **media/** — загруженные фото и файлы.
 
-1. Залейте код на GitHub (если ещё не залит).
-2. Зайдите на [dashboard.render.com](https://dashboard.render.com) → **New** → **Blueprint**.
-3. Подключите репозиторий (GitHub), выберите репозиторий с проектом.
-4. Render подхватит **render.yaml** из корня: создаст PostgreSQL (plan: free) и Web Service (Python).
-5. Нажмите **Apply**. Дождитесь окончания сборки и деплоя.
-6. Сайт откроется по адресу вида `https://kvant.onrender.com`.
+   В `.gitignore` не должно быть строк `db.sqlite3` или `media/` (или временно закомментируйте их для этого репо).
 
-## После первого деплоя
+2. Закоммитьте и запушьте всё на GitHub.
 
-БД после миграций пустая (нет страниц Wagtail). Выполните в **Render Shell** (в карточке сервиса → Shell):
+3. [dashboard.render.com](https://dashboard.render.com) → **New** → **Blueprint** → выберите репозиторий.
 
-```bash
-# Суперпользователь (логин/пароль для /admin/)
-python manage.py createsuperuser
+4. Render подхватит **render.yaml** из корня: создаст только Web Service (без PostgreSQL). Нажмите **Apply**, дождитесь сборки.
 
-# Разделы сайта: /novosti/, /o-nas/, /o-nas/sotrudniki/
-python manage.py populate_site
+5. После деплоя откройте сайт по ссылке вида `https://kvant.onrender.com`. Данные и медиа — из репо, ничего вручную заливать не нужно.
 
-# 7 квантумов с педагогами
-python manage.py populate_quantums
-```
+6. **Админка:** логин/пароль те же, что и локально (из вашего db.sqlite3). Если нужно сменить хост в Wagtail: **Settings** → **Sites** → Hostname = `kvant.onrender.com` (или ваш хост Render).
 
-Затем в админке **Wagtail** (**Settings** → **Sites**) отредактируйте запись сайта: в поле **Hostname** укажите ваш хост Render (например `kvant.onrender.com`) и сохраните.
+### Ограничения этого варианта
 
-## Переменные окружения
+- При каждом **новом деплое** контейнер пересоздаётся: берётся снова **db.sqlite3** и **media/** из репо. Изменения, сделанные в админке на Render (новые новости, правки и т.д.), при следующем деплое **пропадут**.
+- Подходит для демо/портфолио. Для «нормальной» работы с сохранением данных — см. ниже вариант с PostgreSQL и при необходимости S3.
 
-Задаются в **render.yaml** или в панели Render:
+---
 
-| Переменная | Откуда | Назначение |
-|------------|--------|------------|
-| `DATABASE_URL` | из БД (Blueprint) | Подключение к PostgreSQL |
-| `SECRET_KEY` | generateValue | Секрет Django |
-| `DJANGO_SETTINGS_MODULE` | `kvant_site.settings.production` | Продакшен-настройки |
+## Вариант с PostgreSQL (данные сохраняются между деплоями)
 
-При необходимости добавьте **ALLOWED_HOSTS** (через запятую) или **RENDER_EXTERNAL_URL** для Wagtail.
+Если нужна полноценная работа: данные в БД и медиа не теряются при редеплое.
 
-## Медиафайлы
+1. В **render.yaml** верните блок с PostgreSQL и переменную **DATABASE_URL** (см. пример в конце файла или в истории репо).
+2. Перенос данных: **export_for_render.bat** → **data.json** в репо → деплой → в Render Shell: `python manage.py loaddata data.json`.
+3. Медиа: загрузить **media/** в S3 (**upload_media_to_s3.py**), в Render задать переменные AWS_*.
 
-На Render диск эфемерный — загруженные через админку файлы пропадут при следующем деплое. Для постоянного хранения позже можно подключить S3 или аналог.
+Подробные шаги были в предыдущей версии этой инструкции (перенос с SQLite на Render с БД и S3).
+
+---
+
+## Что есть в проекте
+
+- **render.yaml** — по умолчанию: один Web Service, **без** PostgreSQL (демо на SQLite из репо).
+- **kvant_site/settings/production.py** — если **DATABASE_URL** не задан, используется **db.sqlite3** из репо и раздача медиа из папки **media/** (режим демо).
+- **build.sh** — `pip install`, `collectstatic`, `migrate` (для SQLite migrate обычно ничего не меняет, если схема уже актуальна).
+- **requirements.txt** — gunicorn, whitenoise, dj-database-url, psycopg2-binary, django-storages, boto3.
+
+Переменные на Render (для демо достаточно тех, что задаёт Blueprint): **SECRET_KEY**, **DJANGO_SETTINGS_MODULE** = `kvant_site.settings.production`.
