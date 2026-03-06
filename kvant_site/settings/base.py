@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
-    "django.contrib.postgres",  # требуется для wagtail.search (IndexEntry: SearchVectorField, GinIndex)
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
@@ -136,8 +135,7 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-_static_dir = PROJECT_DIR / "static"
-STATICFILES_DIRS = [_static_dir] if _static_dir.is_dir() else []
+STATICFILES_DIRS = [PROJECT_DIR / "static"]
 
 STATIC_ROOT = BASE_DIR / "static"
 STATIC_URL = "/static/"

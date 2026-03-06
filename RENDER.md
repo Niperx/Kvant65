@@ -18,9 +18,13 @@
 
 4. Render подхватит **render.yaml** из корня: создаст только Web Service (без PostgreSQL). Нажмите **Apply**, дождитесь сборки.
 
-5. После деплоя откройте сайт по ссылке вида `https://kvant.onrender.com`. Данные и медиа — из репо, ничего вручную заливать не нужно.
+5. После деплоя откройте сайт по ссылке вида `https://kvant.onrender.com`. Данные и медиа — из репо.
 
-6. **Админка:** логин/пароль те же, что и локально (из вашего db.sqlite3). Если нужно сменить хост в Wagtail: **Settings** → **Sites** → Hostname = `kvant.onrender.com` (или ваш хост Render).
+6. **Если в репо только главная страница:** при сборке автоматически запускаются `populate_site` и `populate_quantums` — создаются разделы «Новости», «О нас», «Сотрудники» и 7 квантумов. Чтобы всё это было в репо «навсегда», можно один раз локально выполнить `python manage.py populate_site` и `python manage.py populate_quantums`, затем закоммитить обновлённый **db.sqlite3**.
+
+7. **Админка:** логин/пароль — из вашего db.sqlite3. В Wagtail: **Settings** → **Sites** → в поле **Hostname** укажите ваш хост Render (например `kvant-3q1n.onrender.com`), чтобы ссылки и редиректы работали корректно.
+
+8. **Стили:** для полного отображения добавьте в репо папку **kvant_site/static** (с файлом **css/custom.css**). Если её нет, при сборке создаётся заглушка, чтобы не было 404.
 
 ### Ограничения этого варианта
 
@@ -45,7 +49,7 @@
 
 - **render.yaml** — по умолчанию: один Web Service, **без** PostgreSQL (демо на SQLite из репо).
 - **kvant_site/settings/production.py** — если **DATABASE_URL** не задан, используется **db.sqlite3** из репо и раздача медиа из папки **media/** (режим демо).
-- **build.sh** — `pip install`, `collectstatic`, `migrate` (для SQLite migrate обычно ничего не меняет, если схема уже актуальна).
+- **build.sh** — `pip install`, создание `kvant_site/static` при отсутствии, `migrate`, **populate_site** и **populate_quantums** (создают разделы и квантумы, если их ещё нет), `collectstatic`.
 - **requirements.txt** — gunicorn, whitenoise, dj-database-url, psycopg2-binary, django-storages, boto3.
 
 Переменные на Render (для демо достаточно тех, что задаёт Blueprint): **SECRET_KEY**, **DJANGO_SETTINGS_MODULE** = `kvant_site.settings.production`.

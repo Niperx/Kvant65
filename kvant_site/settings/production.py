@@ -8,6 +8,9 @@ from .base import *
 
 DEBUG = False
 
+# Wagtail search (IndexEntry) требует django.contrib.postgres; на Render он есть в requirements
+INSTALLED_APPS = list(INSTALLED_APPS) + ["django.contrib.postgres"]
+
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable is required in production")

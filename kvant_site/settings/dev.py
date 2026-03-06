@@ -1,5 +1,8 @@
 from .base import *
 
+# Локально используем SQLite, без PostgreSQL — подавляем проверку wagtailsearch (IndexEntry требует postgres)
+SILENCED_SYSTEM_CHECKS = ["postgres.E005"]
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
