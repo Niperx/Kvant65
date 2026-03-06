@@ -10,7 +10,7 @@ class HomePage(Page):
     search_auto_update = False
     hero_title = models.CharField(
         max_length=200,
-        default="РРЦ «Кванториум» Сахалин",
+        default="РРЦ «Кванториум»",
         verbose_name="Заголовок hero-блока",
     )
     hero_subtitle = models.CharField(

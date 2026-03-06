@@ -79,7 +79,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Alpine.js -->
+    <!-- Alpine.js + Intersect (для x-intersect: scroll-reveal) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Кастомные стили: анимации, rich-text, утилиты -->
@@ -92,10 +93,8 @@
         html { scroll-behavior: smooth; }
         body { font-family: 'Inter', sans-serif; font-size: 16px; }
 
-        /* Критично для HTMX: отступ под шапку и transition с первой отрисовки — иначе после Ctrl+F5
-           первая навигация не анимируется и позже появляется «лишний» padding сверху */
+        /* Критично для HTMX: transition с первой отрисовки (отступ под шапку — через #header-spacer в body) */
         #main-content {
-            padding-top: 4rem;
             transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
                         transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
                         filter 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -133,13 +132,17 @@
 <body class="bg-[#fafcff] text-slate-900 min-h-screen flex flex-col" hx-boost="true" hx-target="#main-content" hx-swap="innerHTML swap:500ms">
     {% wagtailuserbar %}
 
-    <!-- Fixed header: вне #main-content, не перерисовывается при HTMX-переходах -->
+    <!-- WAU: progress bar по скроллу (тонкая голубая полоса сверху) -->
+    <div id="progress" class="fixed top-0 left-0 h-1 bg-blue-500 origin-left z-[10000] transition-transform duration-150 ease-out"
+         style="transform: scaleX(0);"></div>
+
+    <!-- Fixed header: вне #main-content, накладывается поверх контента (без отступа под шапку) -->
     <div id="persistent-header" class="fixed top-0 left-0 right-0 w-full z-[9999] bg-white/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
         {% include "includes/navbar.html" %}
     </div>
 
-    <!-- Main content: отступ под фиксированный header — inline, чтобы был с первой отрисовки (до загрузки Tailwind) -->
-    <main class="flex-1 pt-16" id="main-content" role="main" style="padding-top: 4rem;">
+    <!-- Main content: подменяется по HTMX, контент начинается с верха (hero/секции сами дают отступ при необходимости) -->
+    <main class="flex-1 min-h-0" id="main-content" role="main">
         {% block content %}{% endblock %}
     </main>
 
@@ -200,6 +203,21 @@
           if (match && match[1]) document.title = match[1].trim();
         }
       });
+    </script>
+    <!-- WAU: скрипт progress bar по скроллу -->
+    <script>
+      (function() {
+        var progress = document.getElementById('progress');
+        if (!progress) return;
+        function update() {
+          var max = document.body.scrollHeight - window.innerHeight;
+          var value = max > 0 ? (window.scrollY / max) * 100 : 0;
+          progress.style.transform = 'scaleX(' + (value / 100) + ')';
+        }
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+      })();
     </script>
     {% block extra_js %}{% endblock %}
 </body>

@@ -3,13 +3,17 @@
 
 {% block content %}
 
-<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-20">
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white pt-36 pb-20 transition-all duration-700 ease-out"
+     x-data="{ visible: false }" x-intersect.once="visible = true"
+     :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">{{ page.title }}</h1>
     </div>
 </div>
 
-<section class="py-16 bg-white dark:bg-slate-900">
+<section class="py-16 bg-white dark:bg-slate-900 transition-all duration-700 ease-out"
+         x-data="{ visible: false }" x-intersect.once="visible = true"
+         :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {% if page.body %}
         <div class="rich-text text-slate-700 dark:text-slate-300 leading-relaxed text-[1.05rem]">

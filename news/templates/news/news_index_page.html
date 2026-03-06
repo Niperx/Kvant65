@@ -3,8 +3,10 @@
 
 {% block content %}
 
-<!-- Header: заголовок и описание (intro из CMS) -->
-<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-20">
+<!-- Header (scroll-reveal) -->
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white pt-36 pb-20 transition-all duration-700 ease-out"
+     x-data="{ visible: false }" x-intersect.once="visible = true"
+     :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">Новости</h1>
         {% if page.intro %}

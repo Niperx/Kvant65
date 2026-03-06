@@ -1,0 +1,27 @@
+# Render Blueprint: Django + PostgreSQL
+# Подключите репозиторий в dashboard.render.com → New → Blueprint
+
+databases:
+  - name: kvant-db
+    plan: free
+    databaseName: kvant
+    user: kvant
+
+services:
+  - type: web
+    name: kvant
+    runtime: python
+    plan: free
+    buildCommand: "bash build.sh"
+    startCommand: "gunicorn kvant_site.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kvant-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DJANGO_SETTINGS_MODULE
+        value: kvant_site.settings.production
+      - key: WEB_CONCURRENCY
+        value: "2"

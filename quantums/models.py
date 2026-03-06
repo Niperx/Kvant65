@@ -113,6 +113,16 @@ class QuantumPage(Page):
 
     parent_page_types = ["quantums.QuantumIndexPage"]
 
+    def get_context(self, request):
+        context = super().get_context(request)
+        from about.models import EmployeePage
+        teachers_with_employee = []
+        for teacher in self.teachers.all():
+            emp = EmployeePage.objects.live().filter(title__iexact=teacher.name.strip()).first() if teacher.name else None
+            teachers_with_employee.append({"teacher": teacher, "employee_page": emp})
+        context["teachers_with_employee"] = teachers_with_employee
+        return context
+
     class Meta:
         verbose_name = "Квантум"
         verbose_name_plural = "Квантумы"

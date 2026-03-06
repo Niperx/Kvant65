@@ -3,8 +3,12 @@
 {% if news_list %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for article in news_list %}
+    <div x-data="{ visible: false }" x-intersect.once="visible = true"
+         :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'"
+         class="transition-all duration-700 ease-out"
+         style="transition-delay: calc({{ forloop.counter0 }} * 0.1s);">
     <a href="{{ article.url }}"
-       class="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col">
+       class="group card-hover bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col h-full">
         {% if article.specific.cover_image %}
         <div class="h-48 overflow-hidden">
             {% image article.specific.cover_image fill-600x300 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" %}
@@ -34,6 +38,7 @@
             <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">{{ article.specific.intro }}</p>
         </div>
     </a>
+    </div>
     {% endfor %}
 </div>
 {% else %}

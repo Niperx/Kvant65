@@ -4,7 +4,7 @@
 {% block content %}
 
 <!-- Hero Banner -->
-<div class="relative overflow-hidden text-white py-24"
+<div class="relative overflow-hidden text-white pt-36 pb-20"
      style="background: linear-gradient(135deg, {{ page.accent_color }}22 0%, {{ page.accent_color }}44 100%), linear-gradient(to bottom right, #0f172a, #1e293b);">
     <div class="absolute inset-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);"></div>
     <div class="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-30"
@@ -69,22 +69,33 @@
             <div class="space-y-6">
 
                 <!-- Teachers -->
-                {% if page.teachers.all %}
+                {% if teachers_with_employee %}
                 <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
                     <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                         <span class="text-xl">👨‍🏫</span> Педагоги
                     </h3>
                     <ul class="space-y-3">
-                        {% for teacher in page.teachers.all %}
+                        {% for item in teachers_with_employee %}
                         <li class="flex items-start gap-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5"
-                                 style="background-color: {{ page.accent_color }}">
-                                {{ teacher.name|first }}
+                            {% if item.employee_page %}
+                            <a href="{% pageurl item.employee_page %}" class="shrink-0 mt-0.5 block rounded-full overflow-hidden w-10 h-10 ring-2 ring-slate-200 dark:ring-slate-600 hover:ring-indigo-400 dark:hover:ring-indigo-500 transition-all">
+                                {% if item.employee_page.photo %}
+                                {% image item.employee_page.photo fill-80x80 class="w-full h-full object-cover" %}
+                                {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-white text-sm font-bold" style="background-color: {{ page.accent_color }}">{{ item.teacher.name|first }}</div>
+                                {% endif %}
+                            </a>
+                            <div class="min-w-0">
+                                <a href="{% pageurl item.employee_page %}" class="font-medium text-sm text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{{ item.teacher.name }}</a>
+                                <div class="text-xs text-slate-400">{{ item.teacher.role }}</div>
                             </div>
+                            {% else %}
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5" style="background-color: {{ page.accent_color }}">{{ item.teacher.name|first }}</div>
                             <div>
-                                <div class="font-medium text-sm text-slate-900 dark:text-white">{{ teacher.name }}</div>
-                                <div class="text-xs text-slate-400">{{ teacher.role }}</div>
+                                <div class="font-medium text-sm text-slate-900 dark:text-white">{{ item.teacher.name }}</div>
+                                <div class="text-xs text-slate-400">{{ item.teacher.role }}</div>
                             </div>
+                            {% endif %}
                         </li>
                         {% endfor %}
                     </ul>

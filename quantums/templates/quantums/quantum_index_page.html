@@ -3,8 +3,10 @@
 
 {% block content %}
 
-<!-- Page Header -->
-<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-20">
+<!-- Page Header (scroll-reveal) -->
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white pt-36 pb-20 transition-all duration-700 ease-out"
+     x-data="{ visible: false }" x-intersect.once="visible = true"
+     :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">Квантумы</h1>
         <p class="text-slate-300 text-lg max-w-2xl">
@@ -18,8 +20,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for quantum in quantums %}
+            <div x-data="{ visible: false }" x-intersect.once="visible = true"
+                 :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'"
+                 class="transition-all duration-700 ease-out"
+                 style="transition-delay: calc({{ forloop.counter0 }} * 0.1s);">
             <a href="{{ quantum.url }}"
-               class="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col">
+               class="group card-hover bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col h-full">
                 <!-- Color bar -->
                 <div class="h-2" style="background-color: {{ quantum.specific.accent_color }}"></div>
                 <div class="p-6 flex flex-col flex-1">
@@ -60,13 +66,16 @@
                     </div>
                 </div>
             </a>
+            </div>
             {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Info Banner -->
-<section class="py-12 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+<!-- Info Banner (scroll-reveal) -->
+<section class="py-12 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 transition-all duration-700 ease-out"
+         x-data="{ visible: false }" x-intersect.once="visible = true"
+         :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl">

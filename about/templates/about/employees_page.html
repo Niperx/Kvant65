@@ -3,8 +3,10 @@
 
 {% block content %}
 
-<!-- Header -->
-<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white py-20">
+<!-- Header (scroll-reveal) -->
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white pt-36 pb-20 transition-all duration-700 ease-out"
+     x-data="{ visible: false }" x-intersect.once="visible = true"
+     :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">Сотрудники</h1>
         <p class="text-slate-300 text-lg">Руководство и педагогический состав РРЦ «Кванториум»</p>
@@ -14,8 +16,10 @@
 <section class="py-16 bg-slate-50 dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
-        <!-- Аккордеон 1: Педагогический состав стационарного Кванториума (открыт по умолчанию) -->
-        <div x-data="{ open: true }" class="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-700">
+        <!-- Аккордеон 1: Педагогический состав стационарного Кванториума (scroll-reveal) -->
+        <div x-data="{ open: true, visible: false }" x-intersect.once="visible = true"
+             :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'"
+             class="transition-all duration-700 ease-out bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-700">
             <button type="button"
                     @click="open = !open"
                     class="w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.25rem] text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
@@ -105,8 +109,10 @@
             </div>
         </div>
 
-        <!-- Аккордеон 2: Педагогический состав мобильного комплекса (закрыт по умолчанию) -->
-        <div x-data="{ open: false }" class="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-700">
+        <!-- Аккордеон 2: Педагогический состав мобильного комплекса (scroll-reveal) -->
+        <div x-data="{ open: false, visible: false }" x-intersect.once="visible = true"
+             :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'"
+             class="transition-all duration-700 ease-out bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-700">
             <button type="button"
                     @click="open = !open"
                     class="w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.25rem] text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
@@ -165,8 +171,10 @@
             </div>
         </div>
 
-        <!-- Аккордеон 3: Методисты, специалисты, организаторы, инженеры (закрыт по умолчанию) -->
-        <div x-data="{ open: false }" class="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-700">
+        <!-- Аккордеон 3: Методисты, специалисты, организаторы, инженеры (scroll-reveal) -->
+        <div x-data="{ open: false, visible: false }" x-intersect.once="visible = true"
+             :class="visible ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-8 blur-sm'"
+             class="transition-all duration-700 ease-out bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-700">
             <button type="button"
                     @click="open = !open"
                     class="w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.25rem] text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
