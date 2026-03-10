@@ -1,7 +1,5 @@
-# Django project
-/media/
+# Django project (оставляем только собранную статику — media/ и db.sqlite3 нужны для демо из репо)
 /static/
-*.sqlite3
 
 # Python and others
 __pycache__

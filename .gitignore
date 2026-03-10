@@ -68,6 +68,7 @@ coverage.xml
 
 # Cursor
 .cursor/
+.claude/
 
 # Misc
 *.bak
